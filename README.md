@@ -22,8 +22,13 @@ Programming language written for desmos
 # Updates
 
 ## v1.0
+ - Lists
+ - functions
+ - error messages that work
 
-
+## v2.0
+ - something
+ - 
 
 ## v3.0
  - [ ] Waaaaay better error messages
