@@ -1,3 +1,5 @@
+# Warning
+This project is in development and currently being rewritten
 # GraphLang
 Programming language written for desmos
 
@@ -14,23 +16,18 @@ Programming language written for desmos
 
 # Current Features
  - expressions such as `y = x`
- - Namespaces - maps to desmos folders `ns Namespace{`
- - Functions `fn Function {`
- - Lists `[1,2,3,4]` (list comprehension soon)
- - Many desmos functions, e.g. sin, cos , tan
- - polygons
- - Pre-compilation variable checking
- - Namespace dot notation
- - Proper scoping sytem
- - Function calls
- - Macros
- - Imports from other graphlang files
- - Beginings of a stdlib
- - Conditional statements
+ - Namespaces - maps to desmos folders `ns Namespace {...}`
+ - More to come... 
+
+# Updates
+
+## v1.0
+
+
 
 ## v3.0
  - [ ] Waaaaay better error messages
- - [x] Conditional statements
+ - [ ] Conditional statements
  - [ ] List comp
  - [ ] Bug fixes
 ## v4.0+
