@@ -7,6 +7,9 @@ from AST import (
     Number,
     Identifier,
     Assignment,
+    FunctionDef,
+    List,
+    ListComprehension,
 )
 from state import DesmosState
 
@@ -38,10 +41,44 @@ class Interpreter:
             return self.interpret_binary_op(node)
         elif isinstance(node, Number):
             return str(node.value)
+        elif isinstance(node, FunctionDef):
+            return self.interpret_function(node)
+        elif isinstance(node, List):
+            return self.interpret_list(node)
+        elif isinstance(node, ListComprehension):
+            return self.interpret_list_comprehension(node)
         elif isinstance(node, Identifier):
             return self.format_identifier(node.name)
         else:
             raise ValueError(f"Unknown node type: {type(node)}")
+
+    def interpret_list(self, node):
+        if not node.elements:
+            return "\\left[\\right]"
+
+        elements_latex = ",".join(self.interpret(el) for el in node.elements)
+        return f"\\left[{elements_latex}\\right]"
+
+    def interpret_list_comprehension(self, node: ListComprehension) -> str:
+        expr_latex = self.interpret(node.expression)
+        var_latex = self.format_identifier(node.variable)
+        start_latex = self.interpret(node.start)
+        end_latex = self.interpret(node.end)
+
+        # g=\\left[x^{2}\\operatorname{for}\\ x\\ =\\left[0...10\\right]\\right]"
+        return f"\\left[{expr_latex}\\operatorname{{for}}\\ {var_latex}\\ =\\left[{start_latex}...{end_latex}\\right]\\right]"
+
+    def interpret_function(self, node):
+        """Convert function definition to Desmos latex"""
+        name_latex = self.format_identifier(node.name)
+        params_latex = ",".join(self.format_identifier(p) for p in node.params)
+        body_latex = self.interpret(node.body)
+        latex = f"{name_latex}\\left({params_latex}\\right)={body_latex}"
+        kwargs = {}
+        if self.state.current_folder:
+            kwargs["folderId"] = self.state.current_folder
+        self.state.add_expression(latex, **kwargs)
+        return latex
 
     def interpret_program(self, node: Program) -> str:
         """Process all statements in the program"""

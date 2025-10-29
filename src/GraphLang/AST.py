@@ -61,3 +61,25 @@ class Identifier(ASTNode):
 @dataclass
 class Number(ASTNode):
     value: int | float
+
+
+@dataclass
+class FunctionDef(ASTNode):
+    name: str
+    params: list[str]
+    body: ASTNode
+
+
+@dataclass
+class List(ASTNode):
+    elements: list[ASTNode]
+
+
+@dataclass
+class ListComprehension(ASTNode):
+    """List comprehension: [x^2 for x in [1...10]]"""
+
+    expression: ASTNode
+    variable: str
+    start: ASTNode
+    end: ASTNode

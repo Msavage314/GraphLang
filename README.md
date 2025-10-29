@@ -15,9 +15,10 @@ Programming language written for desmos
 ### Warning - many of these features could be unstable or will be changed at a later date!
 
 # Current Features
- - expressions such as `y = x`
+ - expressions such as `y = x^2 + 1`
  - Namespaces - maps to desmos folders `ns Namespace {...}`
- - More to come... 
+ - Functions - `fn MyFunc(x) = x^2`
+ - Lists and list comprehension
 
 # Updates
 

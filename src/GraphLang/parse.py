@@ -9,9 +9,11 @@ from AST import (
     Program,
     Number,
     Identifier,
+    FunctionDef,
+    List,
+    ListComprehension,
 )
 from tokens import Token, TokenTypes
-from lex import Lexer
 
 
 class Parser:
@@ -56,10 +58,34 @@ class Parser:
             return self.parse_namespace()
         elif self.match(TokenTypes.IF):
             return self.parse_if()
+        elif self.match(TokenTypes.FN):
+            return self.parse_function()
         elif self.match(TokenTypes.IDENTIFIER):
             return self.parse_assignment()
+
         else:
             raise SyntaxError(f"Unexpected token: {self.current}")
+
+    def parse_function(self) -> FunctionDef:
+        """Parse: fn name(param1, param2) = body"""
+        self.consume(TokenTypes.FN)
+        name = self.consume(TokenTypes.IDENTIFIER).value
+        self.consume(TokenTypes.LPAREN)
+
+        # Parse parameters
+        params = []
+        if not self.match(TokenTypes.RPAREN):
+            params.append(self.consume(TokenTypes.IDENTIFIER).value)
+            while self.match(TokenTypes.COMMA):
+                self.consume(TokenTypes.COMMA)
+                params.append(self.consume(TokenTypes.IDENTIFIER).value)
+
+        self.consume(TokenTypes.RPAREN)
+        self.consume(TokenTypes.ASSIGN)
+        body = self.parse_expression()
+        self.consume(TokenTypes.LINE)
+
+        return FunctionDef(name=name, params=params, body=body)
 
     def parse_namespace(self) -> Namespace:
         self.consume(TokenTypes.NAMESPACE)
@@ -133,14 +159,23 @@ class Parser:
         return left
 
     def parse_multiplicative(self) -> ASTNode:
-        left = self.parse_primary()
+        left = self.parse_exponentiation()  # Change from parse_primary
         while self.match(TokenTypes.MULTIPLY, TokenTypes.DIVIDE):
             if self.current is None:
                 raise SyntaxError()
             op = self.current.value
             self.position += 1
-            right = self.parse_primary()
+            right = self.parse_exponentiation()  # Change from parse_primary
             left = BinaryOp(op=op, left=left, right=right)
+        return left
+
+    def parse_exponentiation(self) -> ASTNode:
+        """Handle exponentiation (right-associative)"""
+        left = self.parse_primary()
+        if self.match(TokenTypes.POW):
+            self.consume(TokenTypes.POW)
+            right = self.parse_exponentiation()  # Right-associative
+            return BinaryOp(op="^", left=left, right=right)
         return left
 
     def parse_primary(self) -> ASTNode:
@@ -163,8 +198,57 @@ class Parser:
             expr = self.parse_expression()
             self.consume(TokenTypes.RPAREN)
             return expr
+        elif self.match(TokenTypes.LBRACKET):
+            return self.parse_list()
         else:
-            raise SyntaxError(f"Unexpected token in expression: {self.current()}")
+            raise SyntaxError(f"Unexpected token in expression: {self.current}")
+
+    def parse_list(self):
+        self.consume(TokenTypes.LBRACKET)
+        # empty list
+        if self.match(TokenTypes.RBRACKET):
+            self.consume(TokenTypes.RBRACKET)
+            return List(elements=[])
+
+        first_expr = self.parse_expression()
+
+        if self.match(TokenTypes.IDENTIFIER) and self.current.value == "for":
+            self.position += 1
+            variable = self.consume(TokenTypes.IDENTIFIER).value
+
+            if not self.match(TokenTypes.IDENTIFIER) and self.current.value == "in":
+                raise SyntaxError("Expected 'in' after variable in list comprehension")
+
+            self.position += 1
+            self.consume(TokenTypes.LBRACKET)
+            start = self.parse_expression()
+
+            if self.match(TokenTypes.DOT):
+                self.consume(TokenTypes.DOT)
+                self.consume(TokenTypes.DOT)
+                self.consume(TokenTypes.DOT)
+            else:
+                # Alternative: use comma for range [1, 10]
+                self.consume(TokenTypes.COMMA)
+
+            end = self.parse_expression()
+            self.consume(TokenTypes.RBRACKET)
+            self.consume(TokenTypes.RBRACKET)
+
+            return ListComprehension(
+                expression=first_expr, variable=variable, start=start, end=end
+            )
+
+        # Regular list: [1, 2, 3]
+        elements = [first_expr]
+        while self.match(TokenTypes.COMMA):
+            self.consume(TokenTypes.COMMA)
+            if self.match(TokenTypes.RBRACKET):
+                break
+            elements.append(self.parse_expression())
+
+        self.consume(TokenTypes.RBRACKET)
+        return List(elements=elements)
 
     @property
     def current(self) -> Token | None:

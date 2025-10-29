@@ -15,11 +15,14 @@ class TokenTypes(Enum):
     GREATEREQUAL = ">="
     LESSEQUAL = "<="
     DOT = "."
+    POW = "^"
 
     LBRACE = "{"
     RBRACE = "}"
     LPAREN = "("
     RPAREN = ")"
+    LBRACKET = "["
+    RBRACKET = "]"
     SEMICOLON = ";"
     COLON = ":"
     COMMA = ","
@@ -29,6 +32,7 @@ class TokenTypes(Enum):
     MACRO = "macro"
     IF = "if"
     ELSE = "else"
+    FN = "fn"
 
     IDENTIFIER = "identifier"
     EOF = "EOF"
@@ -59,6 +63,7 @@ TOKEN_PATTERNS = {
     "MACRO": r"macro",
     "IF": r"if",
     "ELSE": r"else",
+    "FN": r"fn",
     # Single-character operators
     "PLUS": r"\+",
     "MINUS": r"-",
@@ -68,10 +73,13 @@ TOKEN_PATTERNS = {
     "GREATER": r">",
     "LESS": r"<",
     "DOT": r"\.",
+    "POW": r"\^",
     "LPAREN": r"\(",
     "RPAREN": r"\)",
     "LBRACE": r"\{",
     "RBRACE": r"\}",
+    "LBRACKET": r"\[",
+    "RBRACKET": r"\]",
     "SEMICOLON": r";",
     "COLON": r":",
     "COMMA": r",",
